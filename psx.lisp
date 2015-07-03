@@ -16,17 +16,17 @@
 
 
 (defconstant +dom-types+
-  '(:MATH :SVG :A :ABBR :ADDRESS :AREA :ARTICLE :ASIDE :AUDIO :B :BASE :BDI :BDO
- :BLOCKQUOTE :BODY :BR :BUTTON :BUTTON :BUTTON :BUTTON :CANVAS :CAPTION :CITE
- :CODE :COL :COLGROUP :COMMAND :COMMAND :COMMAND :COMMAND :DATALIST :DD :DEL
- :DETAILS :DFN :DIV :DL :DT :EM :EMBED :FIELDSET :FIGCAPTION :FIGURE :FOOTER
- :FORM :H1 :H2 :H3 :H4 :H5 :H6 :HEAD :HEADER :HGROUP :HR :HTML :I :IFRAME :IMG
- :INPUT :INS :KBD :KEYGEN :LABEL :LEGEND :LI :LINK :MAP :MARK :MENU
- :META :META :META :META :META :META :METER :NAV :NOSCRIPT :OBJECT :OL
- :OPTGROUP :OPTION :OUTPUT :P :PARAM :PRE :PROGRESS :Q :RP :RT :RUBY :S :SAMP
- :SCRIPT :SECTION :SELECT :SMALL :SOURCE :SPAN :STRONG :STYLE :SUB :SUMMARY
- :SUP :TABLE :TBODY :TD :TEXTAREA :TFOOT :TH :THEAD :TIME :TITLE :TR :TRACK :U
-    :UL :VAR :VIDEO :WBR))
+  '(:math :svg :a :abbr :address :area :article :aside :audio :b :base :bdi :bdo
+ :blockquote :body :br :button :button :button :button :canvas :caption :cite
+ :code :col :colgroup :command :command :command :command :datalist :dd :del
+ :details :dfn :div :dl :dt :em :embed :fieldset :figcaption :figure :footer
+ :form :h1 :h2 :h3 :h4 :h5 :h6 :head :header :hgroup :hr :html :i :iframe :img
+ :input :ins :kbd :keygen :label :legend :li :link :map :mark :menu
+ :meta :meta :meta :meta :meta :meta :meter :nav :noscript :object :ol
+ :optgroup :option :output :p :param :pre :progress :q :rp :rt :ruby :s :samp
+ :script :section :select :small :source :span :strong :style :sub :summary
+ :sup :table :tbody :td :textarea :tfoot :th :thead :time :title :tr :track :u
+    :ul :var :video :wbr))
 	    
 (defparameter *attr-synonyms*
   '(:readonly :read-only
@@ -85,44 +85,37 @@
   (if (atom parsed-node)
       parsed-node
       (destructuring-bind (&key type props children) parsed-node
-	(let* ((type-sym
+	(let ((type-sym
 		(make-symbol (string type)))
 	       (props-obj
 		(cond
 		  (props `((ps:create ,@props)))
-		  (children (list nil))))
-	       (is-dom-type (dom-type-p type))
-	       (inner-form
-		(if is-dom-type
-		    `(,type-sym ,@props-obj)
-		    `(create-element ,type-sym ,@props-obj))))
+		  (children (list nil)))))
 	  (values
-	   (if is-dom-type
-	       `(ps:chain React DOM ,inner-form)
-	       `(ps:chain React ,inner-form))
-	   (cdr inner-form)
+	   (if (dom-type-p type)
+	       `(ps:chain React DOM (,type-sym ,@props-obj))
+	       `(ps:chain React (create-element ,type-sym ,@props-obj)))
 	   children)))))
 
 (defun compile-tree (parsed-tree)
-  (let (root)
+  (let ((adjacency-table (make-hash-table))
+	(root nil))
     (traverse-tree
      (lambda (&key parent child)
-       (multiple-value-bind (outer-form inner-form children) (compile-node child)
-	 (when (null root)
-	   (setf root outer-form))
-	 (when parent
-	   (cond
-	     ((null (cdr parent))
-	      (push outer-form (cdr parent)))
-	     ((and (listp (cadr parent))
-		   (eql (caadr parent) 'list))
-	      (push outer-form (cdadr parent)))
-	     (t
-	      (setf (cadr parent)
-		    (list 'list outer-form (cadr parent))))))
-	 (values inner-form children)))
+       (multiple-value-bind (compiled-node children) (compile-node child)
+	 (push compiled-node (gethash parent adjacency-table))
+	 (values compiled-node children)))
      parsed-tree)
-    root))
-	 
+    (maphash
+     (lambda (parent children)
+       (if (null parent)
+	   (setf root (first children))
+	   (setf (cdr (last (car (last parent))))
+		 (if (rest children)
+		     `((list ,@children))
+		     `(,(first children))))))
+       adjacency-table)
+     root))
+	     	 
 (ps:defpsmacro psx (form)
   (compile-tree (parse-tree form)))
