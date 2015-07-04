@@ -47,10 +47,14 @@
 	      (token (first tokens) (first tokens)))
 	     ((or done (null tokens))
 	      (list :type (first node) :props props :children tokens))
-	  (cond (attr (setf props (list* attr token props)
-			    attr nil))
-		((keywordp token) (setf attr token))
-		(t (setf done t)))))))
+	  (cond
+	    (attr
+	     (setf props (append (parse-attr attr token) props)
+		   attr nil))
+	    ((keywordp token)
+	     (setf attr token))
+	    (t
+	     (setf done t)))))))
 
 (defun traverse-tree (function tree)
   (let ((stack (list (list :parent nil :child tree))))
