@@ -1,9 +1,9 @@
 ;;;; cl-react.asd
 
 (asdf:defsystem #:cl-react
-  :description "Describe cl-react here"
-  :author "Your Name <your.name@example.com>"
-  :license "Specify license here"
+  :description "Common Lisp (Parenscript) utilities for building web apps in ReactJs"
+  :author "Helmut Kian Rohrbacher"
+  :license ""
   :depends-on (#:parenscript)
   :serial t
   :components ((:file "package")
