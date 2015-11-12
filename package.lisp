@@ -14,4 +14,4 @@
            #:children-count
            #:children-only
            #:psx
-           #:*ps-react-lib*))
+           #:*cl-react-lib*))

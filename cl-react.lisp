@@ -29,7 +29,7 @@
   `(defvar ,name (create-class ,object-specification)))
 
 
-(defparameter *ps-react-lib*
+(defparameter *cl-react-lib*
   (ps:ps
     (define-react-function create-class (object-specification))
 
