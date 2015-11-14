@@ -1,5 +1,7 @@
 ;(in-package #:cl-react)
- 
+
+#.(setf (readtable-case *readtable*) :invert)
+
 (defvar *test*
   '(:a 
     :href "#"
@@ -120,6 +122,8 @@
 		     `(,(first children))))))
        adjacency-table)
      root))
-	     	 
+ 
 (ps:defpsmacro psx (form)
   (compile-tree (parse-tree form)))
+
+#.(setf (readtable-case *readtable*) :upcase)
