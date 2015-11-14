@@ -58,3 +58,23 @@
     (define-react-children count)
 
     (define-react-children only)))
+
+(ps:defpsmacro define-react-class (name render &rest other)
+  "A convenience wrapper macro for create-class. The created class will be
+assigned to the name specified by the first variable. The second value is
+code to be placed in the render method. It will be automatically wrapped in
+an anonymous function. The remainder of the parameters are key/value pairs
+That will become attributes of the object.
+
+If name is set to nil, the macro will return the class without attempting to
+assign it to a variable.
+
+If render is set to nil, the macro will not fill the render attribute. It can
+then be manually filled in the rest section."
+  (let ((classcode
+          `(create-class
+            (ps:create ,@(when render `(:render (lambda () ,render)))
+                    ,@other))))
+    (if name
+        `(ps:var ,name ,classcode)
+        classcode)))
