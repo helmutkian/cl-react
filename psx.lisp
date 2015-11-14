@@ -1,5 +1,7 @@
 ;(in-package #:cl-react)
- 
+
+#.(setf (readtable-case *readtable*) :invert)
+
 (defvar *test*
   '(:a 
     :href "#"
@@ -97,8 +99,8 @@
 		  (children (list nil)))))
 	  (values
 	   (if (dom-type-p type)
-	       `(ps:chain |React| *D-O-M (,type-sym ,@props-obj))
-	       `(ps:chain |React| (create-element ,type-sym ,@props-obj)))
+	       `(ps:chain React DOM (,type-sym ,@props-obj))
+	       `(ps:chain React (create-element ,type-sym ,@props-obj)))
 	   children)))))
 
 (defun compile-tree (parsed-tree)
@@ -120,7 +122,8 @@
 		     `(,(first children))))))
        adjacency-table)
      root))
-	     	 
+ 
 (ps:defpsmacro psx (form)
   (compile-tree (parse-tree form)))
 
+#.(setf (readtable-case *readtable*) :upcase)
