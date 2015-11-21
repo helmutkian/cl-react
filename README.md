@@ -15,7 +15,7 @@ PSX is a Parenscript equivilent to JSX, ReactJs's extended JavaScript syntax. It
 =>
 
 ````javascript
-  React.createElement('a', { href: 'http://www.google.com' }, [
-    React.createElement('span', { className: 'text-green' }, ["Click here"]
+  React.DOM.a({ href: 'http://www.google.com' }, [
+    React.DOM.span({ className: 'text-green' }, "Click here")
   ]);
 ````
