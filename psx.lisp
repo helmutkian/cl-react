@@ -1,12 +1,12 @@
-;(in-package #:cl-react)
- 
-(defvar *test*
-  '(:a 
-    :href "#"
-    :disabled t
-    (:span :class "text-primary" "Some text")
-    (:span :class "text-muted" (:i :class "pencil-icon"))))
+(in-package :cl-react.psx)
 
+;;; *******************************************************************************************
+
+#.(progn
+    (defvar *user-readtable-case* (readtable-case *readtable*))
+    (setf (readtable-case *readtable*) :invert))
+
+;;; *******************************************************************************************
 
 (defparameter *binary-attrs*
   '(:read-only
@@ -93,12 +93,12 @@
 		(make-symbol (string type)))
 	       (props-obj
 		(cond
-		  (props `((ps:create ,@props)))
+		  (props `((create ,@props)))
 		  (children (list nil)))))
 	  (values
 	   (if (dom-type-p type)
-	       `(ps:chain React DOM (,type-sym ,@props-obj))
-	       `(ps:chain React (create-element ,type-sym ,@props-obj)))
+	       `(chain React DOM (,type-sym ,@props-obj))
+	       `(chain React (create-element ,type-sym ,@props-obj)))
 	   children)))))
 
 (defun compile-tree (parsed-tree)
@@ -119,7 +119,13 @@
 		     `((list ,@children))
 		     `(,(first children))))))
        adjacency-table)
-     root))
-	     	 
-(ps:defpsmacro psx (form)
+    root))
+
+(defun compile-psx (form)
   (compile-tree (parse-tree form)))
+
+;;; *******************************************************************************************
+
+#.(setf (readtable-case *readtable*) *user-readtable-case*)
+
+;;; *******************************************************************************************
