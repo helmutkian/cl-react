@@ -1,5 +1,13 @@
 # cl-react
 Common Lisp (Parenscript) utilities for building web apps in ReactJs
+ 
+### Installation
+
+* Clone the repo ``git clone https://github.com/helmutkian/cl-react.git``
+* Fire up your Common Lisp environment
+* Load the ASDF system definition ``(load "<path to cl-react.asd">)``
+* Load the system ``(ql:quickload 'cl-react)``
+* Build the JavaScript library ``(cl-react:build)``
 
 ### PSX
 
