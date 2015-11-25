@@ -1,80 +1,32 @@
-(in-package #:cl-react)
+(cl-react::define-react-function cl-react:create-class (object-specification))
 
-(ps:defpsmacro define-react-function (name lambda-list &key nicknames)
-  (let ((args
-          (remove-if (lambda (sym) (find sym '(&optional &key))) lambda-list)))
-    `(progn
-       (defun ,name ,lambda-list
-         (ps:chain |React| (,name ,@args)))
-       ,@(mapcar (lambda (nickname)
-                   `(defun ,nickname ,lambda-list (,name ,@args)))
-                 nicknames))))
+(cl-react::define-react-function cl-react:create-element (type &optional props children))
 
-(ps:defpsmacro define-react-dom (name)
-  `(defun ,name (&optiodnal props children)
-     (ps:chain (ps:getprop |React| "DOM") (,name props children))))
+(cl-react::define-react-function cl-react:create-factory (type))
 
-(ps:defpsmacro define-react-children (name &optional lambda-list)
-  (let ((args
-          (remove-if (lambda (sym) (find sym '(&optional &key))) lambda-list))
-        (fn-name
-          (intern (map 'string
-                       #'char-upcase
-                       (concatenate 'string "children-" (string name))))))
-    `(defun ,fn-name ,(cons 'children lambda-list)
-       (ps:chain (ps:getprop |React| "Children")
-                 (,name ,@args)))))
+(cl-react::define-react-function cl-react:render (element container &optional callback))
 
-(ps:defpsmacro define-react-class (name &rest object-specification)
-  `(defvar ,name (create-class ,object-specification)))
+(cl-react::define-react-function cl-react:unmount-component-at-node (container))
 
+(cl-react::define-react-function cl-react:render-to-string (element))
 
-(defparameter *cl-react-lib*
-  (ps:ps
-    (define-react-function create-class (object-specification))
+(cl-react::define-react-function cl-react:render-to-static-markup (element))
 
-    (define-react-function create-element (type &optional props children))
+(cl-react::define-react-function cl-react:is-valid-element (object)
+  :nicknames (valid-element-p))
 
-    (define-react-function create-factory (type))
+(cl-react::define-react-function cl-react:|findDOMNode| (component)
+  :nicknames (cl-react:find-dom-node))
 
-    (define-react-function render (element container &optional callback))
+(defun cl-react:children-map (fn &optional context)
+  (chain |React| "Children" (map fn context)))
 
-    (define-react-function unmount-component-at-node (container))
+(defun cl-react:children-for-each (fn &optional context)
+  (chain |React| "Children" (map fn context)))
 
-    (define-react-function render-to-string (element))
+(defun cl-react:children-count ()
+  (chain |React| "Children" (count)))
 
-    (define-react-function render-to-static-markup (element))
+(defun cl-react:children-only ()
+  (chain |React| "Children" (only)))
 
-    (define-react-function is-valid-element (object)
-      :nicknames (valid-element-p))
-
-    (define-react-function |findDOMNode| (component)
-      :nicknames (find-dom-node))
-
-    (define-react-children map (fn &optional context))
-
-    (define-react-children for-each (fn &optional context))
-
-    (define-react-children count)
-
-    (define-react-children only)))
-
-(ps:defpsmacro define-react-class (name render &rest other)
-  "A convenience wrapper macro for create-class. The created class will be
-assigned to the name specified by the first variable. The second value is
-code to be placed in the render method. It will be automatically wrapped in
-an anonymous function. The remainder of the parameters are key/value pairs
-That will become attributes of the object.
-
-If name is set to nil, the macro will return the class without attempting to
-assign it to a variable.
-
-If render is set to nil, the macro will not fill the render attribute. It can
-then be manually filled in the rest section."
-  (let ((classcode
-          `(create-class
-            (ps:create ,@(when render `(:render (lambda () ,render)))
-                    ,@other))))
-    (if name
-        `(ps:var ,name ,classcode)
-        classcode)))
