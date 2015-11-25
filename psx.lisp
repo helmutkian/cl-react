@@ -40,23 +40,26 @@
     (when (or (not (find jsx-attr *binary-attrs*)) value)
   (list (make-symbol (string jsx-attr)) value))))
 
+(defun descend-p (node)
+  "Should psx macro parse below this node?"
+  (and (listp node) (not (eq (car node) 'ps:ps))))
 
 (defun parse-node (node)
   (let (done attr props)
-    (if (atom node)
-  node
-  (do* ((tokens (rest node) (funcall (if done #'identity #'rest) tokens))
-        (token (first tokens) (first tokens)))
-       ((or done (null tokens))
-        (list :type (first node) :props props :children tokens))
-    (cond
-      (attr
-       (setf props (append (parse-attr attr token) props)
-       attr nil))
-      ((keywordp token)
-       (setf attr token))
-      (t
-       (setf done t)))))))
+    (if (descend-p node)
+        (do* ((tokens (rest node) (funcall (if done #'identity #'rest) tokens))
+              (token (first tokens) (first tokens)))
+             ((or done (null tokens))
+              (list :type (first node) :props props :children tokens))
+          (cond
+            (attr
+             (setf props (append (parse-attr attr token) props)
+                   attr nil))
+            ((keywordp token)
+             (setf attr token))
+            (t
+             (setf done t))))
+        node)))
 
 
 (defun traverse-tree (function tree)
@@ -73,7 +76,7 @@
     (traverse-tree
      (lambda (&key child parent)
        (setf parsed-node (parse-node child)
-             children (and (listp parsed-node) (getf parsed-node :children)))
+             children (and (descend-p parsed-node) (getf parsed-node :children)))
        (when (null root)
          (setf root parsed-node))
        (when children
@@ -90,8 +93,7 @@
 
 
 (defun compile-node (parsed-node)
-  (if (atom parsed-node)
-      parsed-node
+  (if (descend-p parsed-node)
       (destructuring-bind (&key type props children) parsed-node
         (let ((type-sym
                 (make-symbol (string type)))
@@ -103,7 +105,10 @@
            (if (dom-type-p type)
                `(ps:chain React DOM (,type-sym ,@props-obj))
                `(ps:chain React (create-element ,type-sym ,@props-obj)))
-           children)))))
+           children)))
+      (if (atom parsed-node)
+          parsed-node
+          (cdr parsed-node)))) ;Drop the (ps... ) wrapper
 
 
 (defun compile-tree (parsed-tree)
