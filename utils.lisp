@@ -18,4 +18,4 @@
   (compile-psx form))
 
 (defun build ()
-  (ps-compile-file "./cl-react.lisp"))
+  (ps-compile-file (asdf:system-relative-pathname 'cl-react "cl-react.lisp")))
