@@ -1,3 +1,5 @@
+(in-package :cl-react)
+
 (defun strip-whitespace (string)
   (remove-if (lambda (c) (find c '(#\space #\tab #\newline)))
 	     string))
