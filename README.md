@@ -18,8 +18,8 @@ PSX is a Parenscript equivilent to JSX, ReactJs's extended JavaScript syntax. It
 
 (ps:ps 
   (cl-react:psx 
-    (:a :href (cl-react:with-ps (@ this props siteUrl))
-      (:span :class "text-green" (cl-react:with-ps (@ this props siteName))))))
+    (:a :href (cl-react:with-ps (ps:@ this props siteUrl))
+      (:span :class "text-green" (cl-react:with-ps (ps:@ this props siteName))))))
 ````
 
 =>
