@@ -17,5 +17,7 @@
 (defpsmacro cl-react:psx (form)
   (compile-psx form))
 
+(defparameter cl-react:with-ps 'with-ps)
+
 (defun build ()
   (ps-compile-file "./cl-react.lisp"))
