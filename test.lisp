@@ -1,4 +1,4 @@
-(in-package :cl-react)
+(in-package :cl-react.psx)
 
 (defun strip-whitespace (string)
   (remove-if (lambda (c) (find c '(#\space #\tab #\newline)))
