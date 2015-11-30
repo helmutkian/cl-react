@@ -14,16 +14,18 @@ Common Lisp (Parenscript) utilities for building web apps in ReactJs
 PSX is a Parenscript equivilent to JSX, ReactJs's extended JavaScript syntax. It uses the familiar CL-WHO syntax for markup generation.
 
 ````common-lisp
+
+
 (ps:ps 
-  (psx 
-    (:a :href "http://www.google.com"
-      (:span :class "text-green" "Click here!"))))
+  (cl-react:psx 
+    (:a :href (cl-react:with-ps (@ this props siteUrl))
+      (:span :class "text-green" (cl-react:with-ps (@ this props siteName))))))
 ````
 
 =>
 
 ````javascript
-  React.DOM.a({ href: 'http://www.google.com' }, [
-    React.DOM.span({ className: 'text-green' }, "Click here")
+  React.DOM.a({ href: this.props.siteUrl }, [
+    React.DOM.span({ className: 'text-green' }, this.props.siteName)
   ]);
 ````
