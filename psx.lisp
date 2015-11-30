@@ -33,9 +33,11 @@
     :class :class-name)
   "HTML attributes that differ from JSX or that need some doctoring to work with Parenscript")
 
+(defparameter *injected-sym* 'with-ps)
+
 (defun injectedp (node)
   (and (listp node)
-       (eql (first node) '{})))
+       (eql (first node) *injected-sym*)))
 
 (defun unwrap-injected (injected)
   (cadr injected))
