@@ -5,7 +5,7 @@
 	     string))
 
 (defun test-psx* (psx-form expected-js)
-  (let* ((compiled-psx (ps:ps* `(psx ,psx-form)))
+  (let* ((compiled-psx (ps:ps* (compile-psx psx-form)))
 	(result (string= (strip-whitespace compiled-psx)
 			 (strip-whitespace expected-js))))
     (format t
