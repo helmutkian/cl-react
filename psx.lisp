@@ -35,23 +35,16 @@
 
 (defparameter *injected-sym* 'with-ps)
 
-(defun injectedp (node)
-  (and (listp node)
-       (eql (first node) *injected-sym*)))
-
-(defun unwrap-injected (injected)
-  (cadr injected))
-
-(defun atom-or-injected-p (form)
-  (or (atom form) (injectedp form)))
+(defun psx-atom-p (form)
+  "Is value atomic--i.e. non-traversable."
+  (not (and (listp form)
+	    (keywordp (first form)))))
 
 (defun parse-prop (prop value)
   (let ((jsx-prop (or (getf *prop-synonyms* prop) prop)))
     (when (or (not (find jsx-prop *binary-props*)) value)
       (list (make-symbol (string jsx-prop))
-	    (if (injectedp value)
-		(unwrap-injected value)
-		value)))))
+	    value))))
 
 (defun parse-props (form)
   (loop
@@ -69,7 +62,7 @@
 		
 
 (defun parse-node (node)
-  (if (atom-or-injected-p node)
+  (if (psx-atom-p node)
       node
       (multiple-value-bind (props children) (parse-props (rest node))
 	(list :type (first node)
@@ -87,7 +80,7 @@
 	   do (push child stack))))
 
 (defun make-branch (parsed-node)
-  (if (atom-or-injected-p parsed-node)
+  (if (psx-atom-p parsed-node)
       parsed-node
       (list :type (getf parsed-node :type)
 	    :props (getf parsed-node :props)
@@ -102,7 +95,7 @@
 	 (if (null root)
 	     (setf root branch)
 	     (push branch (getf parent :children)))
-	 (when (not (atom-or-injected-p parsed-node))
+	 (when (not (psx-atom-p parsed-node))
 	   (mapcar (lambda (child) (list child branch))
 		   (getf parsed-node :children)))))
      tree)
@@ -114,20 +107,20 @@
 
 
 (defun compile-node (parsed-node)
-  (cond ((atom parsed-node) parsed-node)
-	((injectedp parsed-node) (unwrap-injected parsed-node))
-	(t (destructuring-bind (&key type props children) parsed-node
-	     (let ((type-sym (make-symbol (string type)))
-		   (props-form (cond ((and (null children) (null props)) nil)
-				     ((null props) (list nil))
-				     (t `((create ,@props)))))
-		   (children-form (cond ((null children) nil)
-					((rest children) (list (list 'array)))
-					(t (list nil)))))
-	       (values (if (dom-type-p type)
+  (if (psx-atom-p parsed-node)
+      parsed-node
+      (destructuring-bind (&key type props children) parsed-node
+	(let ((type-sym (make-symbol (string type)))
+	      (props-form (cond ((and (null children) (null props)) nil)
+				((null props) (list nil))
+				(t `((create ,@props)))))
+	      (children-form (cond ((null children) nil)
+				   ((rest children) (list (list 'array)))
+				   (t (list nil)))))
+	  (values (if (dom-type-p type)
 			   `(chain React DOM (,type-sym ,@props-form ,@children-form))
 			   `(chain React (create-element ,type-sym ,@props-form ,@children-form)))
-		       children))))))
+		  children)))))
 
 (defun push-compiled-child (child compiled-node)
   (let* ((children-cell (last (first (last compiled-node))))
