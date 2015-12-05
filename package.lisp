@@ -9,6 +9,8 @@
   (:export #:build
 	   #:psx
 	   #:define-class
+	   #:set-state*
+	   #:bind-lambda
            #:create-class
 	   #:create-element
 	   #:create-factory

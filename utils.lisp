@@ -17,5 +17,13 @@
 (defpsmacro cl-react:psx (form)
   (compile-psx form))
 
+(defpsmacro cl-react:set-state* (&body object-specification)
+  `(chain this
+	  (#:|setState| (create ,@object-specification))))
+
+(defpsmacro cl-react:bind-lambda (args &body body)
+  `(chain (lambda ,args ,@body)
+	  (bind this)))
+
 (defun build ()
   (ps-compile-file (asdf:system-relative-pathname 'cl-react "cl-react.lisp")))
