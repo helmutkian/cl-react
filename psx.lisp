@@ -33,8 +33,6 @@
     :class :class-name)
   "HTML attributes that differ from JSX or that need some doctoring to work with Parenscript")
 
-(defparameter *injected-sym* 'with-ps)
-
 (defun psx-atom-p (form)
   "Is value atomic--i.e. non-traversable."
   (not (and (listp form)
