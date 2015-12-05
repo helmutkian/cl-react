@@ -5,7 +5,7 @@
 	 (remove-if (lambda (sym) (find sym '(&optional &key))) lambda-list)))
     `(progn
        (defun ,name ,lambda-list
-	 (chain |React| (,name ,@args)))
+         (chain #:|React| (,(make-symbol (string name)) ,@args)))
        ,@(mapcar (lambda (nickname)
 		   `(defun ,nickname ,lambda-list (,name ,@args)))
 		 nicknames))))
@@ -18,4 +18,4 @@
   (compile-psx form))
 
 (defun build ()
-  (ps-compile-file "./cl-react.lisp"))
+  (ps-compile-file (asdf:system-relative-pathname 'cl-react "cl-react.lisp")))
