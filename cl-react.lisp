@@ -4,7 +4,9 @@
 
 (cl-react::define-react-function cl-react:create-factory (type))
 
-(cl-react::define-react-function cl-react:render (element container &optional callback))
+;(cl-react::define-react-function cl-react:render (element container &optional callback))
+(defun cl-react:render (element container &optional callback)
+  (chain #:|ReactDOM| (#:render element container callback)))
 
 (cl-react::define-react-function cl-react:unmount-component-at-node (container))
 
@@ -19,14 +21,14 @@
   :nicknames (cl-react:find-dom-node))
 
 (defun cl-react:children-map (fn &optional context)
-  (chain |React| "Children" (map fn context)))
+  (chain #:|React| "Children" (map fn context)))
 
 (defun cl-react:children-for-each (fn &optional context)
-  (chain |React| "Children" (map fn context)))
+  (chain #:|React| "Children" (map fn context)))
 
 (defun cl-react:children-count ()
-  (chain |React| "Children" (count)))
+  (chain #:|React| "Children" (count)))
 
 (defun cl-react:children-only ()
-  (chain |React| "Children" (only)))
+  (chain #:|React| "Children" (only)))
 
