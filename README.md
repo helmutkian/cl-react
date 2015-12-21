@@ -86,3 +86,104 @@ A nil in the name parameter will cause def-component to return a class without a
 
 To skip the implicit render body - for example, when supplying an external render function - place nil as the first item in the body.
 
+###Example code
+
+
+````javascript
+var CommentBox = React.createClass({
+  loadCommentsFromServer: function() {
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+        this.setState({data: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+  handleCommentSubmit: function(comment) {
+    var comments = this.state.data;
+   comment.id = Date.now();
+    var newComments = comments.concat([comment]);
+    this.setState({data: newComments});
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      type: 'POST',
+      data: comment,
+      success: function(data) {
+        this.setState({data: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        this.setState({data: comments});
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+  getInitialState: function() {
+    return {data: []};
+  },
+  componentDidMount: function() {
+    this.loadCommentsFromServer();
+    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+  },
+  render: function() {
+    return (
+      <div className="commentBox">
+        <h1>Comments</h1>
+        <CommentList data={this.state.data} />
+        <CommentForm onCommentSubmit={this.handleCommentSubmit} />
+      </div>
+    );
+  }
+});
+````
+
+````common-lisp
+(def-component -comment-box
+  (psx (:div :class-name "commentBox"
+             (:h1 "Comments")
+             (:-comment-list :data (state data))
+             (:-comment-form :on-comment-submit
+                             (@ this handle-comment-submit))))
+  load-comments-from-server
+  (lambda ()
+    (chain
+     $ (ajax
+        (create
+         url (prop url)
+         data-type "json"
+         cache nil
+         success (chain (lambda (data) (set-state data data)) (bind this))
+         error (chain (lambda (xhr status err)
+                        (chain console (error (prop url) status
+                                              (chain err (to-string)))))
+                      (bind this))))))
+  handle-comment-submit
+  (lambda (comment)
+    (var (state data))
+    (setf (@ comment id) (chain -date (now)))
+    (var new-comments (chain comments (concat (list comment))))
+    (set-state data new-comments)
+    (chain
+     $ (ajax
+        (create
+         url (prop url)
+         data-type "json"
+         type "POST"
+         data comment
+         success (chain (lambda (data) (set-state data data)) (bind this))
+         error (chain (lambda (xhr status err)
+                        (chain console (error (prop url) status
+                                              (chain err (to-string)))))
+                      (bind this))))))
+  get-initial-state
+  (lambda () (create data []))
+  component-did-mount
+  (lambda ()
+    (chain this (load-comments-from-server))
+    (set-interval (@ this load-comments-from-server) (prop poll-interval))))
+````
