@@ -88,102 +88,110 @@ To skip the implicit render body - for example, when supplying an external rende
 
 ###Example code
 
+Below is an example based on the [React tutorial](https://facebook.github.io/react/docs/tutorial.html). The javascript version is followed by the equivalent in parenscript/cl-react.
 
 ````javascript
-var CommentBox = React.createClass({
-  loadCommentsFromServer: function() {
-    $.ajax({
-      url: this.props.url,
-      dataType: 'json',
-      cache: false,
-      success: function(data) {
-        this.setState({data: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-  handleCommentSubmit: function(comment) {
-    var comments = this.state.data;
-   comment.id = Date.now();
-    var newComments = comments.concat([comment]);
-    this.setState({data: newComments});
-    $.ajax({
-      url: this.props.url,
-      dataType: 'json',
-      type: 'POST',
-      data: comment,
-      success: function(data) {
-        this.setState({data: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        this.setState({data: comments});
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-  getInitialState: function() {
-    return {data: []};
-  },
-  componentDidMount: function() {
-    this.loadCommentsFromServer();
-    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
-  },
+var data = [
+  {id: 1, author: "Pete Hunt", text: "This is one comment"},
+  {id: 2, author: "Jordan Walke", text: "This is *another* comment"}
+];
+
+var CommentForm = React.createClass({
   render: function() {
     return (
-      <div className="commentBox">
-        <h1>Comments</h1>
-        <CommentList data={this.state.data} />
-        <CommentForm onCommentSubmit={this.handleCommentSubmit} />
+      <div className="commentForm">
+        Hello, world! I am a CommentForm.
       </div>
     );
   }
 });
+
+var Comment = React.createClass({
+  rawMarkup: function() {
+    var rawMarkup = marked(this.props.children.toString(), {sanitize: true});
+    return { __html: rawMarkup };
+  },
+
+  render: function() {
+    return (
+      <div className="comment">
+        <h2 className="commentAuthor">
+          {this.props.author}
+        </h2>
+        <span dangerouslySetInnerHTML={this.rawMarkup()} />
+      </div>
+    );
+  }
+});
+
+var CommentList = React.createClass({
+  render: function() {
+    var commentNodes = this.props.data.map(function(comment) {
+      return (
+        <Comment author={comment.author} key={comment.id}>
+          {comment.text}
+        </Comment>
+      );
+    });
+    return (
+      <div className="commentList">
+        {commentNodes}
+      </div>
+    );
+  }
+});
+
+var CommentBox = React.createClass({
+  render: function() {
+    return (
+      <div className="commentBox">
+        <h1>Comments</h1>
+        <CommentList data={this.props.data} />
+        <CommentForm />
+      </div>
+    );
+  }
+});
+
+ReactDOM.render(
+  <CommentBox data={data} />,
+  document.getElementById('content')
+);
 ````
 
 ````common-lisp
+(var data
+     (list
+      (create id 1 author "Peter Hunt" text "This is one comment")
+      (create id 2 author "Jordan Walke" text "This is *another* comment")))
+
+(def-component -comment-form
+    (psx (:div :class-name "commentForm" "Hello, world! I am a CommentForm")))
+
+(def-component -comment
+    (psx
+     (:div :class-name "comment"
+           (:h2 :class-name "commentAuthor" (prop author))
+           (:span :dangerously-set-inner-h-t-m-l (chain this (raw-markup)))))
+  raw-markup
+  (lambda ()
+    (create __html (marked (prop children (to-string)) (create sanitize t)))))
+
+(def-component -comment-list
+    (let ((comment-nodes
+            (mapcar
+             (lambda (comment)
+               (psx (:-comment :author (@ comment author) :key (@ comment id)
+                               (@ comment text))))
+             (prop data))))
+      (psx (:div :class-name "commentList" comment-nodes))))
+
 (def-component -comment-box
-  (psx (:div :class-name "commentBox"
-             (:h1 "Comments")
-             (:-comment-list :data (state data))
-             (:-comment-form :on-comment-submit
-                             (@ this handle-comment-submit))))
-  load-comments-from-server
-  (lambda ()
-    (chain
-     $ (ajax
-        (create
-         url (prop url)
-         data-type "json"
-         cache nil
-         success (chain (lambda (data) (set-state data data)) (bind this))
-         error (chain (lambda (xhr status err)
-                        (chain console (error (prop url) status
-                                              (chain err (to-string)))))
-                      (bind this))))))
-  handle-comment-submit
-  (lambda (comment)
-    (var (state data))
-    (setf (@ comment id) (chain -date (now)))
-    (var new-comments (chain comments (concat (list comment))))
-    (set-state data new-comments)
-    (chain
-     $ (ajax
-        (create
-         url (prop url)
-         data-type "json"
-         type "POST"
-         data comment
-         success (chain (lambda (data) (set-state data data)) (bind this))
-         error (chain (lambda (xhr status err)
-                        (chain console (error (prop url) status
-                                              (chain err (to-string)))))
-                      (bind this))))))
-  get-initial-state
-  (lambda () (create data []))
-  component-did-mount
-  (lambda ()
-    (chain this (load-comments-from-server))
-    (set-interval (@ this load-comments-from-server) (prop poll-interval))))
+    (psx (:div :class-name "commentBox"
+               (:h1 "Comments")
+               (:-comment-list :data (prop data))
+               (:-comment-form))))
+
+(render (psx (:-comment-box :data data))
+        (chain document (get-element-by-id "content")))
 ````
