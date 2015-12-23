@@ -43,10 +43,10 @@ then be manually filled in the rest section."
         classcode)))
 
 (defpsmacro cl-react:prop (&rest params)
-  `(@ this props ,@params))
+  `(chain this #:props ,@params))
 
 (defpsmacro cl-react:state (&rest params)
-  `(@ this state ,@params))
+  `(chain this #:state ,@params))
 
 (defpsmacro cl-react:set-state (&rest params)
-  `(chain this (set-state (create ,@params))))
+  `(chain this (#:set-state (create ,@params))))
