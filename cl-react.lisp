@@ -32,3 +32,9 @@
 (defun cl-react:children-only ()
   (chain #:|React| "Children" (only)))
 
+(defun cl-react:merge-objects (target &rest more-objects)
+  (dolist (obj more-objects)
+    (for-in (attname obj)
+            (setf (getprop target attname) (getprop obj attname))))
+  target)
+
