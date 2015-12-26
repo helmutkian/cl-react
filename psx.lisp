@@ -111,12 +111,15 @@
                  (if obj
                      (cons (cons 'ps:create (nreverse obj)) (nreverse objs))
                      (nreverse objs))
-                 (if (eq (car props) :...)
+                 ;;FIXME: string-equal is inefficient
+                 (if (string-equal (car props) "...")
                      (proc (cddr props)
                            nil
                            (if obj
-                               (cons (cons 'ps:create (nreverse obj)) objs)
-                               objs))
+                               (list* (second props)
+                                      (cons 'ps:create (nreverse obj))
+                                      objs)
+                               (cons (second props) objs)))
                      (proc (cddr props)
                            (list* (second props) (first props) obj)
                            objs)))))
