@@ -109,7 +109,7 @@
   (labels ((proc (props obj objs)
              (if (null props)
                  (if obj
-                     (cons (cons 'ps:create (nreverse obj)) (nreverse objs))
+                     (nreverse (cons (cons 'ps:create (nreverse obj)) objs))
                      (nreverse objs))
                  ;;FIXME: string-equal is inefficient
                  (if (string-equal (car props) "...")
