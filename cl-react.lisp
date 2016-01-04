@@ -32,9 +32,12 @@
   (chain #:|React| "Children" (only)))
 
 (defun cl-react:merge-objects (&rest objects)
-  (let ((res (create)))
-    (dolist (obj objects)
-      (for-in (attname obj)
-              (setf (getprop res attname) (getprop obj attname))))
-    res))
+  (let ((result (create)))
+    (ps:chain objects
+	      (for-each
+	       (lambda (obj)
+		 (ps:chain |Object|
+			   (keys)
+			   (for-each (lambda (key) (setf (getprop result key)
+							 (getprop obj key))))))))))
 
