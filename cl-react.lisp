@@ -17,7 +17,7 @@
   :nicknames (valid-element-p))
 
 (cl-react::define-react-function cl-react:|findDOMNode| (component)
-  :nicknames (cl-react:find-dom-node))
+				 :nicknames (cl-react:find-dom-node))
 
 (defun cl-react:children-map (fn &optional context)
   (chain #:|React| "Children" (map fn context)))

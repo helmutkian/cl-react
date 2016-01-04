@@ -17,17 +17,17 @@
 
 (defparameter *dom-types*
   '(:math :svg :a :abbr :address :area :article :aside :audio :b :base :bdi :bdo
- :blockquote :body :br :button :button :button :button :canvas :caption :cite
- :code :col :colgroup :command :command :command :command :datalist :dd :del
- :details :dfn :div :dl :dt :em :embed :fieldset :figcaption :figure :footer
- :form :h1 :h2 :h3 :h4 :h5 :h6 :head :header :hgroup :hr :html :i :iframe :img
- :input :ins :kbd :keygen :label :legend :li :link :map :mark :menu
- :meta :meta :meta :meta :meta :meta :meter :nav :noscript :object :ol
- :optgroup :option :output :p :param :pre :progress :q :rp :rt :ruby :s :samp
- :script :section :select :small :source :span :strong :style :sub :summary
- :sup :table :tbody :td :textarea :tfoot :th :thead :time :title :tr :track :u
+    :blockquote :body :br :button :button :button :button :canvas :caption :cite
+    :code :col :colgroup :command :command :command :command :datalist :dd :del
+    :details :dfn :div :dl :dt :em :embed :fieldset :figcaption :figure :footer
+    :form :h1 :h2 :h3 :h4 :h5 :h6 :head :header :hgroup :hr :html :i :iframe :img
+    :input :ins :kbd :keygen :label :legend :li :link :map :mark :menu
+    :meta :meta :meta :meta :meta :meta :meter :nav :noscript :object :ol
+    :optgroup :option :output :p :param :pre :progress :q :rp :rt :ruby :s :samp
+    :script :section :select :small :source :span :strong :style :sub :summary
+    :sup :table :tbody :td :textarea :tfoot :th :thead :time :title :tr :track :u
     :ul :var :video :wbr))
-	    
+
 (defparameter *prop-synonyms*
   '(:readonly :read-only
     :class :class-name)
@@ -52,12 +52,12 @@
      until (and (not (keywordp token))
 		(null prop-key))
      if prop-key
-       append (parse-prop prop-key token) into props and
-       do (setf prop-key nil)
+     append (parse-prop prop-key token) into props and
+     do (setf prop-key nil)
      else
-       do (setf prop-key token)
+     do (setf prop-key token)
      finally (return (values props rest-form))))
-		
+
 
 (defun parse-node (node)
   (if (psx-atom-p node)
@@ -66,7 +66,7 @@
 	(list :type (first node)
 	      :props props
 	      :children children))))
-		
+
 
 (defun traverse-tree (fn tree)
   (loop
@@ -99,7 +99,7 @@
      tree)
     root))
 
-  
+
 (defun dom-type-p (type)
   (find type *dom-types*))
 
@@ -133,13 +133,13 @@
 	(let ((type-sym (make-symbol (string type)))
 	      (props-form (cond ((and (null children) (null props)) nil)
 				((null props) (list nil))
-        (t `(,(spread-props props)))))
+				(t `(,(spread-props props)))))
 	      (children-form (cond ((null children) nil)
 				   ((rest children) (list (list 'array)))
 				   (t (list nil)))))
 	  (values (if (dom-type-p type)
-			   `(chain React DOM (,type-sym ,@props-form ,@children-form))
-			   `(chain React (create-element ,type-sym ,@props-form ,@children-form)))
+		      `(chain React DOM (,type-sym ,@props-form ,@children-form))
+		      `(chain React (create-element ,type-sym ,@props-form ,@children-form)))
 		  children)))))
 
 (defun push-compiled-child (child compiled-node)
@@ -148,7 +148,7 @@
     (if (null children)
 	(setf (first children-cell) child)
 	(push child (rest children)))))
-			
+
 (defun compile-tree (parsed-tree)
   (let (root)
     (traverse-tree
@@ -160,7 +160,7 @@
 	 (mapcar (lambda (child) (list child compiled-node)) children)))
      parsed-tree)
     root))
-       
+
 
 (defun compile-psx (form)
   (compile-tree (parse-tree form)))
