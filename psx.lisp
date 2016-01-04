@@ -103,6 +103,28 @@
 (defun dom-type-p (type)
   (find type *dom-types*))
 
+(defun spread-props (proplist)
+  (labels ((proc (props obj objs)
+             (if (null props)
+                 (if obj
+                     (nreverse (cons (cons 'ps:create (nreverse obj)) objs))
+                     (nreverse objs))
+                 ;;FIXME: string-equal is inefficient
+                 (if (string-equal (car props) "...")
+                     (proc (cddr props)
+                           nil
+                           (if obj
+                               (list* (second props)
+                                      (cons 'ps:create (nreverse obj))
+                                      objs)
+                               (cons (second props) objs)))
+                     (proc (cddr props)
+                           (list* (second props) (first props) obj)
+                           objs)))))
+    (let ((objs (proc proplist nil nil)))
+      (if objs
+          `(apply #'react:merge-objects (list ,@objs))
+          '(nil)))))
 
 (defun compile-node (parsed-node)
   (if (psx-atom-p parsed-node)
@@ -111,7 +133,7 @@
 	(let ((type-sym (make-symbol (string type)))
 	      (props-form (cond ((and (null children) (null props)) nil)
 				((null props) (list nil))
-				(t `((create ,@props)))))
+        (t `(,(spread-props props)))))
 	      (children-form (cond ((null children) nil)
 				   ((rest children) (list (list 'array)))
 				   (t (list nil)))))

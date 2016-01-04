@@ -30,6 +30,7 @@
      #:def-component
      #:prop
      #:state
-     #:set-state))
+     #:set-state
+     #:merge-objects))
 
 (setf (ps:ps-package-prefix :cl-react) "cl_react_")

@@ -4,7 +4,6 @@
 
 (cl-react::define-react-function cl-react:create-factory (type))
 
-;(cl-react::define-react-function cl-react:render (element container &optional callback))
 (defun cl-react:render (element container &optional callback)
   (chain #:|ReactDOM| (#:render element container callback)))
 
@@ -31,4 +30,11 @@
 
 (defun cl-react:children-only ()
   (chain #:|React| "Children" (only)))
+
+(defun cl-react:merge-objects (&rest objects)
+  (let ((res (create)))
+    (dolist (obj objects)
+      (for-in (attname obj)
+              (setf (getprop res attname) (getprop obj attname))))
+    res))
 
