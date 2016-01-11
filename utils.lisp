@@ -20,7 +20,9 @@
 (defparameter cl-react:with-ps 'with-ps)
 
 (defun build ()
-  (ps-compile-file (asdf:system-relative-pathname 'cl-react "cl-react.lisp")))
+  (let ((*package* (find-package 'cl-react)))
+    (ps-compile-file
+     (asdf:system-relative-pathname 'cl-react "cl-react.lisp"))))
 
 (defpsmacro cl-react:def-component (name &body params)
   "A convenience wrapper macro for create-class. The created class will be
