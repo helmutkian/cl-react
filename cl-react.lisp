@@ -33,11 +33,11 @@
 
 (defun cl-react:merge-objects (&rest objects)
   (let ((result (create)))
-    (ps:chain objects
+    (chain objects
 	      (for-each
 	       (lambda (obj)
-		 (ps:chain |Object|
-			   (keys)
-			   (for-each (lambda (key) (setf (getprop result key)
-							 (getprop obj key))))))))))
+		 (chain #:|Object|
+			(keys)
+			(for-each (lambda (key) (setf (getprop result key)
+						      (getprop obj key))))))))))
 

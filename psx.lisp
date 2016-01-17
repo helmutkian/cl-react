@@ -126,7 +126,7 @@
      finally
        (return
 	 (if prop-objs
-	     `(apply #'react:merge-objects (array ,@prop-objs))
+	     `(react:merge-objects ,@prop-objs)
 	     (list nil)))))
        
 (defun compile-node (parsed-node)
