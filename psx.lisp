@@ -33,31 +33,39 @@
     :class :class-name)
   "HTML attributes that differ from JSX or that need some doctoring to work with Parenscript")
 
+(defparameter *spread-prop-symbol*
+  ':&...)
+
 (defun psx-atom-p (form)
   "Is value atomic--i.e. non-traversable."
   (not (and (listp form)
 	    (keywordp (first form)))))
 
+(defun spread-prop-symbol-p (object)
+  (eql *spread-prop-symbol* object))
+
 (defun parse-prop (prop value)
   (let ((jsx-prop (or (getf *prop-synonyms* prop) prop)))
     (when (or (not (find jsx-prop *binary-props*)) value)
-      (list (make-symbol (string jsx-prop))
+      (list (intern (string jsx-prop) :keyword)
 	    value))))
 
 (defun parse-props (form)
-  (loop
-     with prop-key = nil
-     for rest-form on form
-     for token = (first rest-form)
-     until (and (not (keywordp token))
-		(null prop-key))
-     if prop-key
-     append (parse-prop prop-key token) into props and
-     do (setf prop-key nil)
-     else
-     do (setf prop-key token)
-     finally (return (values props rest-form))))
-
+  (flet ((prop-key-p (token)
+	   (or (spread-prop-symbol-p token)
+	       (keywordp token))))
+    (loop
+       with prop-key = nil
+       for rest-form on form
+       for token = (first rest-form)
+       until (and (not (prop-key-p token))
+		  (null prop-key))
+       if prop-key
+         append (parse-prop prop-key token) into props and
+         do (setf prop-key nil)
+       else
+         do (setf prop-key token)
+       finally (return (values props rest-form)))))
 
 (defun parse-node (node)
   (if (psx-atom-p node)
@@ -103,29 +111,24 @@
 (defun dom-type-p (type)
   (find type *dom-types*))
 
-(defun spread-props (proplist)
-  (labels ((proc (props obj objs)
-             (if (null props)
-                 (if obj
-                     (nreverse (cons (cons 'ps:create (nreverse obj)) objs))
-                     (nreverse objs))
-                 ;;FIXME: string-equal is inefficient
-                 (if (string-equal (car props) "...")
-                     (proc (cddr props)
-                           nil
-                           (if obj
-                               (list* (second props)
-                                      (cons 'ps:create (nreverse obj))
-                                      objs)
-                               (cons (second props) objs)))
-                     (proc (cddr props)
-                           (list* (second props) (first props) obj)
-                           objs)))))
-    (let ((objs (proc proplist nil nil)))
-      (if objs
-          `(apply #'react:merge-objects (list ,@objs))
-          '(nil)))))
-
+(defun compile-props (plist)
+  (loop
+     with key = nil
+     for token in plist
+     if (spread-prop-symbol-p key)
+       collect token into prop-objs and
+       do (setf key nil)
+     else if key
+       collect `(ps:create ,key ,token) into prop-objs and
+       do (setf key nil)
+     else
+       do (setf key token)
+     finally
+       (return
+	 (if prop-objs
+	     `(apply #'react:merge-objects (array ,@prop-objs))
+	     (list nil)))))
+       
 (defun compile-node (parsed-node)
   (if (psx-atom-p parsed-node)
       parsed-node
@@ -133,7 +136,7 @@
 	(let ((type-sym (make-symbol (string type)))
 	      (props-form (cond ((and (null children) (null props)) nil)
 				((null props) (list nil))
-				(t `(,(spread-props props)))))
+				(t `(,(compile-props props)))))
 	      (children-form (cond ((null children) nil)
 				   ((rest children) (list (list 'array)))
 				   (t (list nil)))))
