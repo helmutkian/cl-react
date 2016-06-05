@@ -34,11 +34,13 @@ That will become attributes of the object.
 If name is set to nil, the macro will return the class without attempting to
 assign it to a variable.
 
-If render is set to nil, the macro will not fill the render attribute. It can
-then be manually filled in the rest section."
+If the first form of params is set to nil, the macro will not fill the render attribute. It can then be manually filled later in the params section."
   (let ((classcode
           `(cl-react:create-class
-            (ps:create ,@(when (car params) `(:render (lambda () ,(car params))))
+            (ps:create ,@(when (car params)
+                           `(:render (lambda ()
+                                       ,(car params))
+                                     #:display-name ',name))
                     ,@(cdr params)))))
     (if name
         `(ps:var ,name ,classcode)
