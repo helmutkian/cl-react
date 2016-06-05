@@ -37,11 +37,13 @@ assign it to a variable.
 If the first form of params is set to nil, the macro will not fill the render attribute. It can then be manually filled later in the params section."
   (let ((classcode
           `(cl-react:create-class
-            (ps:create ,@(when (car params)
-                           `(:render (lambda ()
-                                       ,(car params))
-                                     #:display-name ',name))
-                    ,@(cdr params)))))
+            (ps:create
+             ,@(when (car params)
+                     `(:render (lambda ()
+                                 ,(car params))))
+             ,@(when name
+                     `(#:display-name ',name))
+             ,@(cdr params)))))
     (if name
         `(ps:var ,name ,classcode)
         classcode)))
