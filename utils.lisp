@@ -26,7 +26,7 @@
 
 (defun %needs-thisref-p (code)
   "Tries to determine if 'code' needs access to 'this', the instance of the component defined by def-component"
-  (some (alexandria:rcurry #'member '(prop state set-state component-this-ref))
+  (some (alexandria:rcurry #'member '(prop state set-state %thisref))
         (alexandria:flatten code)))
 
 (defun %add-thisref-binding (code &key (lambda-wrap t))
@@ -35,9 +35,9 @@
       (if lambda-wrap
           (let ((args (gensym)))
             `(lambda (&rest ,args)
-               (let ((component-this-ref this))
+               (let ((%thisref this))
                  (apply ,code ,args))))
-          `(let ((component-this-ref this))
+          `(let ((%thisref this))
              ,code))
       code))
 
@@ -66,11 +66,11 @@ If the first form of params is set to nil, the macro will not fill the render at
                   collect (%add-thisref-binding v))))))
     `(macrolet
          ((cl-react:prop (&rest params)
-            `(chain component-this-ref #:props ,@params))
+            `(chain %thisref #:props ,@params))
           (cl-react:state (&rest params)
-            `(chain component-this-ref #:state ,@params))
+            `(chain %thisref #:state ,@params))
           (cl-react:set-state (&rest params)
-            `(chain component-this-ref (#:set-state (create ,@params)))))
+            `(chain %thisref (#:set-state (create ,@params)))))
        ,(if name
             `(ps:var ,name ,classcode)
             classcode))))

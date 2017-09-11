@@ -3,14 +3,14 @@
   (:use #:cl #:parenscript)
   (:export #:compile-psx
 	   #:with-ps))
-  
+
 (defpackage #:cl-react
   (:nicknames #:react)
   (:use :cl :parenscript :cl-react.psx)
   (:export #:build
 	   #:psx
 	   #:define-class
-           #:create-class
+     #:create-class
 	   #:create-element
 	   #:create-factory
 	   #:render
@@ -31,7 +31,6 @@
      #:state
      #:set-state
      #:merge-objects
-     #:this-ref
-     #:component-this-ref))
+     #:%thisref))
 
 (setf (ps:ps-package-prefix :cl-react) "cl_react_")
