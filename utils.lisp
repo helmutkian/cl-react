@@ -26,7 +26,26 @@
 	  (bind this)))
 
 (defun build ()
-  (ps-compile-file (asdf:system-relative-pathname 'cl-react "cl-react.lisp")))
+  (let ((*package* (find-package 'cl-react)))
+    (ps-compile-file
+     (asdf:system-relative-pathname 'cl-react "cl-react.lisp"))))
+
+(defun %needs-thisref-p (code)
+  "Tries to determine if 'code' needs access to 'this', the instance of the component defined by def-component"
+  (some (alexandria:rcurry #'member '(prop state set-state %thisref))
+        (alexandria:flatten code)))
+
+(defun %add-thisref-binding (code &key (lambda-wrap t))
+  "Wrap code in a rebinding of 'this', so that macros in the code can find it even when it has been stomped. Do so only if the code uses those macros."
+  (if (%needs-thisref-p code)
+      (if lambda-wrap
+          (let ((args (gensym)))
+            `(lambda (&rest ,args)
+               (let ((%thisref this))
+                 (apply ,code ,args))))
+          `(let ((%thisref this))
+             ,code))
+      code))
 
 (defpsmacro cl-react:def-component (name &body params)
   "A convenience wrapper macro for create-class. The created class will be
@@ -38,15 +57,29 @@ That will become attributes of the object.
 If name is set to nil, the macro will return the class without attempting to
 assign it to a variable.
 
-If render is set to nil, the macro will not fill the render attribute. It can
-then be manually filled in the rest section."
+If the first form of params is set to nil, the macro will not fill the render attribute. It can then be manually filled later in the params section."
   (let ((classcode
           `(cl-react:create-class
-            (ps:create ,@(when (car params) `(:render (lambda () ,(car params))))
-                    ,@(cdr params)))))
-    (if name
-        `(ps:var ,name ,classcode)
-        classcode)))
+            (ps:create
+             ,@(when (car params)
+                     `(:render (lambda ()
+                                 ,(%add-thisref-binding (car params)
+                                                        :lambda-wrap nil))))
+             ,@(when name
+                     `(#:display-name ',name))
+             ,@(loop for (k v) on (cdr params) by #'cddr
+                  collect k
+                  collect (%add-thisref-binding v))))))
+    `(macrolet
+         ((cl-react:prop (&rest params)
+            `(chain %thisref #:props ,@params))
+          (cl-react:state (&rest params)
+            `(chain %thisref #:state ,@params))
+          (cl-react:set-state (&rest params)
+            `(chain %thisref (#:set-state (create ,@params)))))
+       ,(if name
+            `(ps:var ,name ,classcode)
+            classcode))))
 
 (defpsmacro cl-react:prop (&rest params)
   `(chain this #:props ,@params))

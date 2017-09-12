@@ -31,6 +31,7 @@
      #:prop
      #:state
      #:set-state
-     #:merge-objects))
+     #:merge-objects
+     #:%thisref))
 
 (setf (ps:ps-package-prefix :cl-react) "cl_react_")
