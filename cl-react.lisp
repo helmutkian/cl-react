@@ -4,7 +4,8 @@
 
 (cl-react::define-react-function cl-react:create-factory (type))
 
-(cl-react::define-react-function cl-react:render (element container &optional callback))
+(defun cl-react:render (element container &optional callback)
+  (chain #:|ReactDOM| (#:render element container callback)))
 
 (cl-react::define-react-function cl-react:unmount-component-at-node (container))
 
@@ -16,17 +17,27 @@
   :nicknames (valid-element-p))
 
 (cl-react::define-react-function cl-react:|findDOMNode| (component)
-  :nicknames (cl-react:find-dom-node))
+				 :nicknames (cl-react:find-dom-node))
 
 (defun cl-react:children-map (fn &optional context)
-  (chain |React| "Children" (map fn context)))
+  (chain #:|React| "Children" (map fn context)))
 
 (defun cl-react:children-for-each (fn &optional context)
-  (chain |React| "Children" (map fn context)))
+  (chain #:|React| "Children" (map fn context)))
 
 (defun cl-react:children-count ()
-  (chain |React| "Children" (count)))
+  (chain #:|React| "Children" (count)))
 
 (defun cl-react:children-only ()
-  (chain |React| "Children" (only)))
+  (chain #:|React| "Children" (only)))
 
+(defun cl-react:merge-objects (&rest objects)
+  (let ((result (create)))
+    (chain objects
+	      (#:for-each
+	       (lambda (obj)
+		 (chain #:|Object|
+			(#:keys obj)
+			(#:for-each (lambda (key) (setf (getprop result key)
+                                      (getprop obj key))))))))
+    result))
