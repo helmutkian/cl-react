@@ -34,7 +34,7 @@
   "HTML attributes that differ from JSX or that need some doctoring to work with Parenscript")
 
 (defparameter *spread-prop-symbol*
-  :&...)
+  :...)
 
 (defun psx-atom-p (form)
   "Is value atomic--i.e. non-traversable."
