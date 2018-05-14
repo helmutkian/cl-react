@@ -14,6 +14,7 @@
            #:create-class
 	   #:create-element
 	   #:create-factory
+     #:clone-element
 	   #:render
 	   #:unmount-component-at-node
 	   #:render-to-string

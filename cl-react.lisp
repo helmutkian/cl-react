@@ -4,6 +4,8 @@
 
 (cl-react::define-react-function cl-react:create-factory (type))
 
+(cl-react::define-react-function cl-react:clone-element (type &optional props children))
+
 (defun cl-react:render (element container &optional callback)
   (chain #:|ReactDOM| (#:render element container callback)))
 
