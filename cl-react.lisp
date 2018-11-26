@@ -1,3 +1,7 @@
+
+(setf (@ #:-react #:create-class) (require "create-react-class"))
+(setf (@ #:-react #:-d-o-m) (require "react-dom-factories"))
+
 (cl-react::define-react-function cl-react:create-class (object-specification))
 
 (cl-react::define-react-function cl-react:create-element (type &optional props children))

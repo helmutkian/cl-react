@@ -27,12 +27,14 @@
 	   #:children-for-each
 	   #:children-count
 	   #:children-only
+     #:fragment
 	   #:with-ps
      #:def-component
      #:prop
      #:state
      #:set-state
      #:merge-objects
-     #:%thisref))
+     #:%thisref
+     #:def-pure-component))
 
 (setf (ps:ps-package-prefix :cl-react) "cl_react_")

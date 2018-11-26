@@ -81,6 +81,36 @@ If the first form of params is set to nil, the macro will not fill the render at
             `(ps:var ,name ,classcode)
             classcode))))
 
+(defpsmacro cl-react:def-pure-component (name &body params)
+  "Like def-component, but uses javascript classes internally, so some naming conventions must be
+handled differently."
+  (let*
+      ((constructors
+        (remove-if-not (lambda (x) (and (listp x) (string-equal (car x) 'constructor))) params))
+       (others
+        (remove-if (lambda (x) (and (listp x) (string-equal (car x) 'constructor))) params))
+       (constructor
+        (case (length constructors)
+          (0 `(defun ,name ()))
+          (1 `(defun ,name ,@(cddr constructors)))
+          (otherwise (error "Component can't have more than one constructor")))))
+    `(macrolet
+         ((cl-react:prop (&rest params)
+            `(chain %thisref #:props ,@params))
+          ;;FIXME: do pure components use state?
+          (cl-react:state (&rest params)
+            `(chain %thisref #:state ,@params))
+          (cl-react:set-state (&rest params)
+            `(chain %thisref (#:set-state (create ,@params)))))
+       ,constructor
+       ,@(mapcar
+          (lambda (item)
+            `(setf (@ ,name prototype ,(car item))
+                   (lambda ,(second item) ,@(%add-thisref-binding (cddr item)))))
+          others)
+       (setf (@ ,name prototype) (chain -object (create (@ -react -pure-component prototype))))
+       (setf (@ ,name prototype constructor) ,name))))
+
 (defpsmacro cl-react:prop (&rest params)
   `(chain this #:props ,@params))
 
