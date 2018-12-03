@@ -35,16 +35,19 @@
   (some (alexandria:rcurry #'member '(prop state set-state %thisref))
         (alexandria:flatten code)))
 
-(defun %add-thisref-binding (code &key (lambda-wrap t))
+(defun %add-thisref-binding (code)
   "Wrap code in a rebinding of 'this', so that macros in the code can find it even when it has been stomped. Do so only if the code uses those macros."
   (if (%needs-thisref-p code)
-      (if lambda-wrap
-          (let ((args (gensym)))
-            `(lambda (&rest ,args)
-               (let ((%thisref this))
-                 (apply ,code ,args))))
-          `(let ((%thisref this))
-             ,code))
+      `((let ((%thisref this))
+          ,@code))
+      code))
+
+(defun %add-thisref-lambda (code)
+  (if (%needs-thisref-p code)
+      (let ((args (gensym)))
+        `(lambda (&rest ,args)
+           (let ((%thisref this))
+             (apply ,code ,args))))
       code))
 
 (defpsmacro cl-react:def-component (name &body params)
@@ -63,13 +66,12 @@ If the first form of params is set to nil, the macro will not fill the render at
             (ps:create
              ,@(when (car params)
                      `(:render (lambda ()
-                                 ,(%add-thisref-binding (car params)
-                                                        :lambda-wrap nil))))
+                                 ,@(%add-thisref-binding  (list (car params))))))
              ,@(when name
                      `(#:display-name ',name))
              ,@(loop for (k v) on (cdr params) by #'cddr
                   collect k
-                  collect (%add-thisref-binding v))))))
+                  collect (%add-thisref-lambda v))))))
     `(macrolet
          ((cl-react:prop (&rest params)
             `(chain %thisref #:props ,@params))
@@ -86,12 +88,14 @@ If the first form of params is set to nil, the macro will not fill the render at
 handled differently."
   (let*
       ((constructors
-        (remove-if-not (lambda (x) (and (listp x) (string-equal (car x) 'constructor))) params))
+        (remove-if-not (lambda (x) (and (listp x) (string-equal (car x) 'constructor)))
+                       (cdr params)))
        (others
-        (remove-if (lambda (x) (and (listp x) (string-equal (car x) 'constructor))) params))
+        (remove-if (lambda (x) (and (listp x) (string-equal (car x) 'constructor)))
+                   (cdr params)))
        (constructor
         (case (length constructors)
-          (0 `(defun ,name ()))
+          (0 `(defun ,name () (chain #:-react #:-pure-component (#:call #:this))))
           (1 `(defun ,name ,@(cddr constructors)))
           (otherwise (error "Component can't have more than one constructor")))))
     `(macrolet
@@ -102,14 +106,17 @@ handled differently."
             `(chain %thisref #:state ,@params))
           (cl-react:set-state (&rest params)
             `(chain %thisref (#:set-state (create ,@params)))))
+       (setf (@ ,name #:prototype)
+             (chain #:-object (create (@ #:-react #:-pure-component #:prototype))))
+       (setf (@ ,name #:prototype #:constructor) ,name)
+       (setf (@ ,name #:prototype #:render)
+             (lambda () ,@(%add-thisref-binding (list (car params)))))
        ,constructor
        ,@(mapcar
           (lambda (item)
-            `(setf (@ ,name prototype ,(car item))
+            `(setf (@ ,name #:prototype ,(car item))
                    (lambda ,(second item) ,@(%add-thisref-binding (cddr item)))))
-          others)
-       (setf (@ ,name prototype) (chain -object (create (@ -react -pure-component prototype))))
-       (setf (@ ,name prototype constructor) ,name))))
+          others))))
 
 (defpsmacro cl-react:prop (&rest params)
   `(chain this #:props ,@params))
