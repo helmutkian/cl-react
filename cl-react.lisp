@@ -1,5 +1,6 @@
 
-(setf #:-react (require "react"))
+(unless #:-react
+  (setf #:-react (require "react")))
 (setf (@ #:-react #:create-class) (require "create-react-class"))
 (setf (@ #:-react #:-d-o-m) (require "react-dom-factories"))
 
