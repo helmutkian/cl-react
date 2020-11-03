@@ -4,7 +4,7 @@
   :author "Helmut Kian Rohrbacher <github.com/helmutkian>"
   :license "MIT"
   :description "Common Lisp (Parenscript) utilities for building web apps in ReactJs"
-  :depends-on (#:parenscript)
+  :depends-on (#:parenscript #:alexandria)
   :components ((:file "package")
 	       (:file "psx"
 		      :depends-on ("package"))

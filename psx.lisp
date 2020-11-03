@@ -34,7 +34,7 @@
   "HTML attributes that differ from JSX or that need some doctoring to work with Parenscript")
 
 (defparameter *spread-prop-symbol*
-  ':&...)
+  :&...)
 
 (defun psx-atom-p (form)
   "Is value atomic--i.e. non-traversable."
@@ -42,12 +42,12 @@
 	    (keywordp (first form)))))
 
 (defun spread-prop-symbol-p (object)
-  (eql *spread-prop-symbol* object))
+  (and (symbolp object) (string-equal *spread-prop-symbol* object)))
 
 (defun parse-prop (prop value)
   (let ((jsx-prop (or (getf *prop-synonyms* prop) prop)))
     (when (or (not (find jsx-prop *binary-props*)) value)
-      (list (intern (string jsx-prop) :keyword)
+      (list (make-symbol (string jsx-prop))
 	    value))))
 
 (defun parse-props (form)
