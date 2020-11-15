@@ -29,5 +29,20 @@
 		     append `(,binding (ps:chain |React| (use-state ,init-value))))
 	   ,@body)))
 
+(ps:defpsmacro cl-react:use-effect (dependencies &body body)
+  "Convenience macro for declaring React#useEffect hooks
+   
+   USE-EFFECT { (dependencies) | undefined } body
+
+   => React.useState(function () { ...body }, [...dependencies] | undefined)
+
+   If dependencies is set to symbol UNDEFINED, then React.useState(function () { ... }, undefined)
+   will be generated.
+ "
+  `(ps:chain |React|
+	     (use-state (lambda () ,@body)
+			,(if (eql dependencies 'undefined)
+			     dependencies
+			     `(array ,@dependencies)))))
 	 
 
