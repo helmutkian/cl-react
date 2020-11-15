@@ -60,7 +60,7 @@
 							       `(array ,@dependencies))))))
      ,@body))
 
-(ps:defpsmacro with-memo (forms &body body)
+(ps:defpsmacro cl-react:with-memo (forms &body body)
   "Convenience macro for declaring React#useMemo hooks
 
   WITH-MEMO ((memoized-var { (dependencies) | undefined } fn-body)*) body
