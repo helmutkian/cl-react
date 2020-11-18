@@ -52,10 +52,12 @@ CL-React contains some convenience aliases for commonly used React functions:
 <tr><td>(prop <i>item</i>)</td><td>this.props.<i>item</i></td></tr>
 <tr><td>(state <i>item</i>)</td><td>this.state.<i>item</i></td></tr>
 <tr><td>(set-state <i>item</i> <i>value</i>)</td><td>this.setState(<i>item, value</i>)</td></tr>
+<tr><td>use-context</td><td>React.useContext</td></tr>
+<tr><td>use-ref</td><td>React.useRef</td></tr>
 </table>
 
-#### def-component
-The def-component macro is a wrapper around create-class.
+#### DEF-COMPONENT
+The `def-component` macro is a wrapper around create-class.
 
 A typical create-class might look like this:
 
@@ -70,7 +72,7 @@ A typical create-class might look like this:
          ...)))
 ````
 
-Def-component tightens it up to this:
+`def-component` tightens it up to this:
 
 ````common-lisp
 (def-component sample-component
