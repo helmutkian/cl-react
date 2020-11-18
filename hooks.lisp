@@ -14,7 +14,7 @@
   `(destructuring-bind*
     ,(loop for (binding init-value) in forms
 	   if (atom binding)
-	     collect `((,binding ,(alexandria:symbolicate 'set- binding))
+	     collect `((,binding ,(make-symbol (concatenate 'string "set-" (string binding))))
 		       (chain |React| (use-state ,init-value)))
 	   else
 	     collect `(,binding (chain |React| (use-state ,init-value))))
@@ -35,7 +35,7 @@
   `(destructuring-bind*
     ,(loop for (binding (reducer init-value . init-fn)) in forms
 	   if (atom binding)
-	     collect `((,binding ,(alexandria:symbolicate 'dispatch- binding))
+	     collect `((,binding ,(make-symbol (concatenate 'string ("dispatch-" (string binding)))))
 		       (chain |React| (use-reducer ,reducer ,init-value ,@init-fn)))
 	   else
 	     collect `(,binding (chain |React| (use-state ,reducer ,init-value ,@init-fn))))
