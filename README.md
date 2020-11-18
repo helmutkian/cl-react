@@ -1,7 +1,7 @@
 # cl-react
 Common Lisp (Parenscript) utilities for building web apps in ReactJs
  
-### Installation
+## Installation
 
 * Clone the repo ``git clone https://github.com/helmutkian/cl-react.git``
 * Fire up your Common Lisp environment
@@ -9,7 +9,7 @@ Common Lisp (Parenscript) utilities for building web apps in ReactJs
 * Load the system ``(ql:quickload 'cl-react)``
 * Build the JavaScript library ``(cl-react:build)``
 
-### PSX
+## PSX
 
 PSX is a Parenscript equivilent to JSX, ReactJs's extended JavaScript syntax. It uses the familiar CL-WHO syntax for markup generation.
 
@@ -30,7 +30,7 @@ PSX is a Parenscript equivilent to JSX, ReactJs's extended JavaScript syntax. It
   ]);
 ````
 
-### Convenience Functions / Macros
+## Convenience Functions / Macros
 
 CL-React contains some convenience aliases for commonly used React functions:
 
@@ -56,7 +56,170 @@ CL-React contains some convenience aliases for commonly used React functions:
 <tr><td>use-ref</td><td>React.useRef</td></tr>
 </table>
 
-#### DEF-COMPONENT
+### Hooks
+
+CL-React provides several macros to make using React Hooks simpler in Parenscript.
+
+#### WITH-STATE
+
+Convenience macro for declaring `React#useState` hooks
+
+**WITH-STATE** (({ *var* *init-value* } | (*var* *set-fn*) *init-value*})\*) *body*
+
+=> const \[*var*, *setFn*\] = React.useState(*initValue*); ...*body*;
+
+  If set-fn is not defined, a function will be automatically bound to the symbol SET-{var}, for example:
+
+  (with-state ((foo 1)) (set-foo (1+ foo)))
+
+````javascript
+function Counter({initialCount}) {
+  const [count, setCount] = useState(initialCount);
+  return (
+    <div>
+      Count: {count}
+      <button onClick={() => setCount(initialCount)}>Reset</button>
+      <button onClick={() => setCount(prevCount => prevCount - 1)}>-</button>
+      <button onClick={() => setCount(prevCount => prevCount + 1)}>+</button>
+    </div>
+  );
+}
+````
+
+````common-lisp
+(defun -counter (props)
+  (with-slots (initial-count) props
+    (with-state ((count initial-count))
+      (psx
+        (:div "Count: " count
+              (:button :on-click (lambda () (set-count initial-count))
+		       "Reset")
+              (:button :on-click (lambda () (set-count (lambda (prev-count) (1- prev-count))))
+		       "-")
+              (:button :on-click (lambda () (set-count (lambda (prev-count) (1+ prev-count))))
+		       "+"))))))
+````
+
+#### WITH-REDUCER
+
+Convenience macro for declaring `React#useReducer` hooks
+
+**WITH-REDUCER** (({ *var* | (*var* *dispatch-fn*) } { (*reducer* *init-value*) | (*reducer* *init-value* *init-fn*) })\*) *body*
+  
+=> const \[*var*, *dispatchFn*\] = React.useReducer(*reducer*, *initValue*, *initFn*)
+
+````javascript
+function init(initialCount) {
+  return {count: initialCount};
+}
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      return {count: state.count + 1};
+    case 'decrement':
+      return {count: state.count - 1};
+    case 'reset':
+      return init(action.payload);
+    default:
+      throw new Error();
+  }
+}
+
+function Counter({initialCount}) {
+  const [counter, dispatchCounter] = useReducer(reducer, initialCount, init);
+  return (
+    <div>
+      Count: {counter.count}
+      <button
+        onClick={() => dispatchCounter({type: 'reset', payload: initialCount})}>
+        Reset
+      </button>
+      <button onClick={() => dispatchCounter({type: 'decrement'})}>-</button>
+      <button onClick={() => dispatchCounter({type: 'increment'})}>+</button>
+    </div>
+  );
+}
+````
+
+````common-lisp
+(defun init (initial-counter)
+  (create count initial-count))
+
+(defun reducer (state action)
+  (case (@ action type)
+    ("increment"
+     (return (create count (1+ (@ state count)))))
+    ("decrement"
+     (return (create count (1- (@ state count)))))
+    ("reset"
+     (return (init (@ action payload))))
+    (t
+     (throw (new (-error))))))
+
+(defun -counter (props)
+  (with-slots (initial-count) props
+    (with-reducer ((counter (reducer initial-count init)))
+      (psx
+       (:div "Count: " (@ counter count)
+	     (:button :on-click (lambda ()
+				  (dispatch-counter (create type "reset"
+							  payload initial-count)))
+		      "Reset")
+	     (:button :on-click (lambda ()
+				  (dispatch-counter (create type "decrement")))
+		      "-")
+	     (:button :on-click (lambda ()
+				  (dispatch-counter (create type "increment")))
+		      "+"))))))
+````
+
+#### USE-EFFECT
+
+Convenience macro for declaring `React#useEffect` hooks
+   
+**USE-EFFECT** { (*dependencies*) | **undefined** } *body*
+
+=> React.useState(function () { ...*body* }, [...*dependencies*] | undefined); ...*body*;
+
+````javascript
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  // Similar to componentDidMount and componentDidUpdate:
+  useEffect(() => {
+    // Update the document title using the browser API
+    document.title = `You clicked ${count} times`;
+  }, [count]);
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+    </div>
+  );
+}
+````
+
+````common-lisp
+(defun -counter ()
+  (with-state ((count 0))
+    (use-effect (count)
+      (setf (@ document title) (concatenate 'string "You clicked " count " times")))
+    (psx
+     (:div
+      (:p "You clicked " count " times")
+      (:button :on-click (lambda () (set-count (1+ count)))
+	       "Click me")))))
+````
+
+#### WITH-CALLBACK
+
+#### WITH-MEMO
+
+### DEF-COMPONENT
 The `def-component` macro is a wrapper around create-class.
 
 A typical create-class might look like this:
