@@ -126,3 +126,10 @@ handled differently."
 
 (defpsmacro cl-react:set-state (&rest params)
   `(chain this (#:set-state (create ,@params))))
+
+(defpsmacro cl-react:destructuring-bind* (forms &body body)
+  (reduce (lambda (form acc)
+	    `(destructuring-bind ,@form ,acc))
+	  forms
+	  :initial-value `(progn ,@body)
+	  :from-end t))

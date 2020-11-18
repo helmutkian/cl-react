@@ -36,11 +36,13 @@
      #:merge-objects
      #:%thisref
      #:def-pure-component
+     #:destructuring-bind*
      #:with-state
      #:use-effect
      #:with-callback
      #:with-memo
      #:use-context
-     #:use-ref))
+     #:use-ref
+     #:with-reducer))
 
 (setf (ps:ps-package-prefix :cl-react) "cl_react_")
