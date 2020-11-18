@@ -54,7 +54,7 @@ CL-React contains some convenience aliases for commonly used React functions:
 <tr><td>(set-state <i>item</i> <i>value</i>)</td><td>this.setState(<i>item, value</i>)</td></tr>
 </table>
 
-####Def-component
+#### def-component
 The def-component macro is a wrapper around create-class.
 
 A typical create-class might look like this:
@@ -86,7 +86,7 @@ A nil in the name parameter will cause def-component to return a class without a
 
 To skip the implicit render body - for example, when supplying an external render function - place nil as the first item in the body.
 
-###Example code
+### Example code
 
 Below is an example based on the [React tutorial](https://facebook.github.io/react/docs/tutorial.html). The javascript version is followed by the equivalent in parenscript/cl-react.
 
