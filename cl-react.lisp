@@ -27,6 +27,10 @@
 (cl-react::define-react-function cl-react:|findDOMNode| (component)
 				 :nicknames (cl-react:find-dom-node))
 
+(cl-react::define-react-function cl-react:use-context (context))
+
+(cl-react::define-react-function cl-react:use-ref (init-value))
+
 (defun cl-react:children-map (fn &optional context)
   (chain #:|React| "Children" (map fn context)))
 
