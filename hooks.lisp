@@ -15,9 +15,9 @@
     ,(loop for (binding init-value) in forms
 	   if (atom binding)
 	     collect `((,binding ,(make-symbol (concatenate 'string "set-" (string binding))))
-		       (chain |React| (use-state ,init-value)))
+		       (chain #:|React| (use-state ,init-value)))
 	   else
-	     collect `(,binding (chain |React| (use-state ,init-value))))
+	     collect `(,binding (chain #:|React| (use-state ,init-value))))
     ,@body))
 
 
@@ -36,9 +36,9 @@
     ,(loop for (binding (reducer init-value . init-fn)) in forms
 	   if (atom binding)
 	     collect `((,binding ,(make-symbol (concatenate 'string ("dispatch-" (string binding)))))
-		       (chain |React| (use-reducer ,reducer ,init-value ,@init-fn)))
+		       (chain #:|React| (use-reducer ,reducer ,init-value ,@init-fn)))
 	   else
-	     collect `(,binding (chain |React| (use-state ,reducer ,init-value ,@init-fn))))
+	     collect `(,binding (chain #:|React| (use-state ,reducer ,init-value ,@init-fn))))
     ,@body))
 
   
@@ -53,11 +53,11 @@
    If dependencies is set to symbol UNDEFINED, then React.useState(function () { ... }, undefined)
    will be generated.
  "
-  `(chain |React|
-	     (use-state (lambda () ,@body)
-			,(if (eql dependencies 'undefined)
-			     dependencies
-			     `(array ,@dependencies)))))
+  `(chain #:|React|
+	  (use-state (lambda () ,@body)
+		     ,(if (eql dependencies 'undefined)
+			  dependencies
+			  `(array ,@dependencies)))))
 
 (defpsmacro cl-react:with-callback (forms &body body)
   "Convenience macro for declaring React#useCallback hooks
@@ -67,11 +67,11 @@
   => var callbackVar = React.useCallback(function () { ...callbackBody }, [...dependencies] | undefined); ...body;
   "
   `(let ,(loop for (binding dependencies . lambda-body) in forms
-	       collect `(,binding (chain |React|
-					    (use-callback (lambda () ,@lambda-body)
-							  ,(if (eql dependencies 'undefined)
-							       dependencies
-							       `(array ,@dependencies))))))
+	       collect `(,binding (chain #:|React|
+					 (use-callback (lambda () ,@lambda-body)
+						       ,(if (eql dependencies 'undefined)
+							    dependencies
+							    `(array ,@dependencies))))))
      ,@body))
 
 (defpsmacro cl-react:with-memo (forms &body body)
@@ -82,30 +82,12 @@
   => var memoizedVar = React.useCallback(function () { ...fnBody }, [...dependencies] | undefined); ...body;
   "
   `(let ,(loop for (binding dependencies . lambda-body) in forms
-	       collect `(,binding (chain |React|
-					    (use-memo (lambda () ,@lambda-body)
-							  ,(if (eql dependencies 'undefined)
-							       dependencies
-							       `(array ,@dependencies))))))
+	       collect `(,binding (chain #:|React|
+					 (use-memo (lambda () ,@lambda-body)
+						   ,(if (eql dependencies 'undefined)
+							dependencies
+							`(array ,@dependencies))))))
      ,@body))
-
-(defun cl-react:use-context (context)
-  "Convenience function wrapper for React#useContect
-
-   USE-CONTEXT context
-
-   => React.useContext(context)
-  "
-  (chain |React| (use-context context)))
-
-(defun cl-react:use-ref (init-value)
-  "Convenience function wrapper for React#use-ref
-
-   USE-REF init-value
-
-   => React.useRef(initValue)
-  "
-  (chain |React| (use-ref init-value)))
 
 
       
