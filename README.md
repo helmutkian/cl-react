@@ -217,7 +217,49 @@ function Counter() {
 
 #### WITH-CALLBACK
 
+Convenience macro for declaring `React#useCallback` hooks
+
+**WITH-CALLBACK** ((*callback-var* { (*dependencies*) | **undefined** } *callback-body*)\*) *body*
+
+=> var *callbackVar* = React.useCallback(function () { ...*callbackBody* }, \[...*dependencies*\] | undefined); ...*body*;
+
+````javascript
+
+const memoizedCallback = useCallback(
+  () => {
+    doSomething(a, b);
+  },
+  [a, b],
+);
+
+memoizedCallback();
+````
+
+````common-lisp
+(with-callback ((memoized-callback (a b)
+		  (do-something a b)))
+  (memoized-callback))
+````
+
 #### WITH-MEMO
+
+Convenience macro for declaring React#useMemo hooks
+
+**WITH-MEMO** ((*memoized-var* { (*dependencies*) | **undefined** } *fn-body*)\*) *body*
+
+=> var *memoizedVar* = React.useCallback(function () { ...*fnBody* }, \[...*dependencies*\] | **undefined**); ...*body*;
+
+````javascript
+const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+
+doSomething(memoizedValue);
+````
+
+````common-lisp
+(with-memo ((memoized-value (a b) 
+              (compute-expensive-value a b)))
+  (do-something memoized-value))
+````
 
 ### DEF-COMPONENT
 The `def-component` macro is a wrapper around create-class.
