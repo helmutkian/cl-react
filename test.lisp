@@ -32,7 +32,7 @@
     
     (test-psx
      (:span :class-name "icon")
-     "React.DOM.span({ className : 'icon' });")
+     "React.DOM.span(cl_react_mergeObjects({ className : 'icon' }));")
     
     (test-psx
      (:span "Test")
@@ -41,10 +41,15 @@
     (test-psx
      (:a :href "#"
 	 (:span "Test"))
-     "React.DOM.a({ href : '#' }, React.DOM.span(null, 'Test'));")
+     "React.DOM.a(cl_react_mergeObjects({ href : '#' }), React.DOM.span(null, 'Test'));")
     
     (test-psx
      (:p (:b "Bold")
 	 (:i "Italic"))
-     "React.DOM.p(null, [React.DOM.b(null, 'Bold'), React.DOM.i(null, 'Italic')]);"))
+     "React.DOM.p(null, [React.DOM.b(null, 'Bold'), React.DOM.i(null, 'Italic')]);")
+
+  (test-psx
+   (:fragment (:td "foo") (:td "bar"))
+   "React.createElement(React.Fragment, null, [React.DOM.td(null, 'foo'), React.DOM.td(null, 'bar')]);"))
+   
   
