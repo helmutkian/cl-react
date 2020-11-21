@@ -139,7 +139,7 @@
 	     (list nil)))))
 
 (defun split-string (str delimiter)
-  (loop with substrs = '(nil)
+  (loop with substrs = (list nil)
 	for char across str
 	if (eql char delimiter)
 	  do (push nil substrs)
