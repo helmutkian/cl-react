@@ -50,6 +50,10 @@
 
   (test-psx
    (:fragment (:td "foo") (:td "bar"))
-   "React.createElement(React.Fragment, null, [React.DOM.td(null, 'foo'), React.DOM.td(null, 'bar')]);"))
+   "React.createElement(React.Fragment, null, [React.DOM.td(null, 'foo'), React.DOM.td(null, 'bar')]);")
+
+  (test-psx
+   (:foo.bar)
+   "React.createElement(foo.bar);"))
    
   
